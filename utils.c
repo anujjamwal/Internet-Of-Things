@@ -8,6 +8,8 @@
 #include "utils.h"
 #include "uart.h"
 
+static int j;
+
 void __delay_ms(int milliseconds)
 {
 	while(milliseconds--)
@@ -17,4 +19,10 @@ void __delay_ms(int milliseconds)
 void log(char * text)
 {
 	uart_puts(text);
+}
+
+void log_arr(unsigned char * text, unsigned int i) {
+	for(j = 0; j< i; j++) {
+		uart_putc(text[j]);
+	}
 }

@@ -15,5 +15,6 @@ typedef unsigned char boolean;
 
 void __delay_ms(int);
 void log(char * text);
+void log_arr(unsigned char * text, unsigned int i);
 
 #endif /* UTILS_H_ */

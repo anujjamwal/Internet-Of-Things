@@ -16,7 +16,7 @@
 					__delay_ms(100);\
 
 
-ARPPacket packet;
+unsigned char buffer[100];
 boolean led = false;
 unsigned char routerIP[4] = {192,168,0,1};
 
@@ -29,6 +29,24 @@ void led_on(DeviceAddress * address)
 {
 	LED_ON;
 	led = true;
+
+}
+
+void populate_router_address(DeviceAddress * address)
+{
+	memcpy(Router.macAddress, address->macAddress, 6);
+	led_on(address);
+
+	log("Router Mac Address found and saved\r\n");
+	log(" Mac Address :");
+	log_arr(Router.macAddress, 6);
+	log("\r\n");
+}
+
+void udp_handler(DeviceAddress * address, unsigned char* data, int len) {
+	log("Got a UDP Message\r\n");
+	log_arr(data, len);
+	log("\r\n\n");
 }
 
 int main( void )
@@ -39,15 +57,32 @@ int main( void )
 	ip_init();
 	BLINK_LED
 
-	ip_to_mac(routerIP, &led_on);
+	log("Initializing device...\r\n");
+	log(" Mac Address :");
+	log_arr(Config.macAddress, 6);
+	log("\r\n");
+	log(" IP Address :");
+	log_arr(Config.ipAddress, 4);
+	log("\r\n");
 
-  while(1)
-  {
-	  if(!led){
-		  BLINK_LED
-	  }
-	  mac_read((unsigned char *)&packet, 42);
-	  handle_request((unsigned char *)&packet);
-	  __delay_ms(1000);
-  }
+	log("Requesting Router Mac address...\r\n");
+	log(" IP Address :");
+	log_arr(Router.ipAddress, 4);
+	log("\r\n");
+
+	udp_callback(&udp_handler);
+
+	//initialize router ip settings
+	ip_to_mac(routerIP, &populate_router_address);
+
+	while(1)
+	{
+		if(!led){
+			BLINK_LED
+		}
+		int size = mac_read(buffer, 100);
+		if(size > 0)
+			handle_request(buffer);
+		__delay_ms(1000);
+	}
 }

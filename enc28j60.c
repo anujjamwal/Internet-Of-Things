@@ -14,6 +14,8 @@
 
 #define ERRATAFIX   set_bit_field(ECON1, ECON1_TXRST);clr_bit_field(ECON1, ECON1_TXRST);clr_bit_field(EIR, EIR_TXERIF | EIR_TXIF)
 
+
+static unsigned int nextpckptr;
 TXStatus txStatus;
 RXStatus ptrRxStatus;
 
@@ -41,6 +43,7 @@ static void write_mac_buffer(unsigned char * bytBuffer,unsigned int ui_len);
  */
 void enc28j60_init(unsigned char * macAddr)
 {
+	nextpckptr = RXSTART;
 	reset_hard();
 
 	reset_soft();
@@ -176,10 +179,10 @@ boolean enc28j60_write_packet(unsigned char * packet, int len)
 	  }
 }
 
+
 unsigned int enc28j60_read_packet(unsigned char* packet, unsigned int maxLen)
 {
   volatile unsigned int pckLen;
-  static unsigned int nextpckptr = RXSTART;
   //volatile RXSTATUS ptrRxStatus;
   volatile unsigned char numPackets;
 
@@ -213,8 +216,8 @@ unsigned int enc28j60_read_packet(unsigned char* packet, unsigned int maxLen)
   }
   else
   {
-	  write_ctrl_reg(ERXRDPTL, (( nextpckptr - 1 ) & 0x00ff ));
-	  write_ctrl_reg(ERXRDPTH, ((( nextpckptr - 1 ) & 0xff00 ) >> 8 ));
+	  write_ctrl_reg(ERXRDPTL, (( nextpckptr ) & 0x00ff ));
+	  write_ctrl_reg(ERXRDPTH, ((( nextpckptr )) >> 8 ));
   }
   // decrement packet counter
   set_bit_field(ECON2, ECON2_PKTDEC);
